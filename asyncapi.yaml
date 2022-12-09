@@ -1,0 +1,123 @@
+asyncapi: 2.5.0
+info:
+  title: rkapi Service
+  version: 1.0.0
+  description: |
+    A service designed as a multi-peers solution for RemAid by integration Kurento Media Server(KMS). It serve as a proxy to multiple KMS.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  localhost:
+    url: localhost
+    protocol: ws
+
+channels:
+  /echo:
+    bindings:
+      ws:
+        query:
+          type: object
+          properties:
+            times:
+              type: integer
+              description: How many times the message should be echoed.
+              minimum: 1
+        bindingVersion: 0.1.0
+    subscribe:
+      operationId: onEcho
+      description: "On echo"
+      message:
+        $ref: '#/components/messages/echo'
+    publish:
+      operationId: sendEcho
+      description: "Send echo"
+      message:
+        $ref: '#/components/messages/echo'
+        
+  /signaling:
+    bindings:
+      ws:
+        query:
+          type: object
+          properties:
+            times:
+              type: integer
+              description: How many times the message should be echoed.
+              minimum: 1
+        bindingVersion: 0.1.0
+    publish:
+      operationId: sendHeartbeat
+      description: "Send Ping for alive session"
+      message:
+        $ref: '#/components/messages/heartbeat'
+
+      
+  /roomEvent/{roomId}:
+    description: Room events which will be sent to the clients of specific rooms
+    parameters:
+      roomId:
+        description: Id of the user.
+        schema:
+          type: string
+    bindings:
+      ws:
+        query:
+          type: object
+          properties:
+            times:
+              type: integer
+              description: How many times the message should be echoed.
+              minimum: 1
+        bindingVersion: 0.1.0
+    subscribe :
+      operationId: onRoomEvent
+      description: "Room events"
+      message:
+        $ref: '#/components/messages/RoomEvent'
+
+components:
+  messages:
+    echo:
+      payload:
+        type: string
+    heartbeat:
+      payload:
+        type: string
+    Signaling:
+      name: Signaling
+      payload:
+        type: object
+        properties:
+          command:
+            type: string
+            description: "Messages format for RoomEvent"          
+          args:
+            type: object
+            additionalProperties:
+              room:
+                type: string
+              msg:
+                type: string
+    RoomEvent:
+      payload:
+        type: object
+        properties:
+          room_event:
+            type: string
+            description: "Messages format for RoomEvent"
+          room:
+            type: string
+            description: "Messages format for RoomEvent"
+          data:
+            type: string
+            description: "Messages format for RoomEvent"
+    default:
+      name: default
+      payload:
+        type: object
+        properties:
+          data:
+            type: string
+            description: "Messages format for RoomEvent"
