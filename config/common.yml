@@ -1,6 +1,7 @@
 default:
   port: 80
-
+  kmsuri: "ws://localhost:8888/kurento"
+  kurento_token: "dbncxjbskjxyhcbnilakjx"
 development:
 
 test:

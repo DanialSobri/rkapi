@@ -2,6 +2,7 @@ const MediaServerManager = require("../mediaServerManager").MediaServerManager
 const expect = require('chai').expect;
 
 // Test are run by ignore the kurentoClient status
+kurentClient_ignore = true;
 describe("Unit Test for MediaServerManager", function() {
     // Global variable
     const msMgr = MediaServerManager.getSingleton();
@@ -13,11 +14,11 @@ describe("Unit Test for MediaServerManager", function() {
 
     it('2. Test addMediaServer function', async function() {
         // Add 2 different media servers
-        expect(await msMgr.addMediaServer("ws://test1")).to.equal(true);
-        expect(await msMgr.addMediaServer("ws://test2")).to.equal(true);
+        expect(await msMgr.addMediaServer("ws://test1",kurentClient_ignore)).to.equal(true);
+        expect(await msMgr.addMediaServer("ws://test2",kurentClient_ignore)).to.equal(true);
         expect(Object.values(await msMgr.getMediaServers()).length).to.equal(2);
         // Add the same media server
-        expect(await msMgr.addMediaServer("ws://test2")).to.equal(false);
+        expect(await msMgr.addMediaServer("ws://test2",kurentClient_ignore)).to.equal(false);
         expect(Object.values(await msMgr.getMediaServers()).length).to.equal(2);
     });
 
@@ -52,5 +53,7 @@ describe("Unit Test for MediaServerManager", function() {
         // Update status on unavailable media server
         expect((await msMgr.updateMediaServer("ws://test1",undefined,"TEST"))).to.equal(false);  
         expect((await msMgr.getMediaServer("ws://test2")).status).to.equal("TEST");
-        });
+        // Remove media server
+        expect(await msMgr.rmMediaServer("ws://test2")).to.equal(true);    
+    });
 })

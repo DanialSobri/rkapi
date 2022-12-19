@@ -1,4 +1,5 @@
 const kurento = require('kurento-client');
+const config = require('../lib/config');
 
 /**
  * The MediaServerManager class defines the `getInstance` method that lets clients access
@@ -18,7 +19,7 @@ class MediaServerManager {
         return this._instance;
     }
     
-    async addMediaServer(ms_url) {
+    async addMediaServer(ms_url,debug=false) {
         if(this._mediaServers[ms_url]) {
             return false;
         }
@@ -26,16 +27,21 @@ class MediaServerManager {
             kurento_client:undefined,
             status:"IDLE"
         }
-        setTimeout(() => {
-            kurento.getSingleton(ms_url,(error,kurento_client) => {
-                if (error) {
-                    console.log("Error connecting to Kurento Media Server: " + error);
-                    return;
-                }
-                mediaServer.kurento_client = kurento_client;
-                mediaServer.status = "ACTIVE";
-            })
-        }, 1000);
+        // TODO: set time out if the server unreachable
+        // Debug=true for unit testing purposes
+        if(!debug) {
+            try {
+                let options = {access_token:config.kurento_token}
+                mediaServer.kurento_client =  await kurento.getSingleton(ms_url,options);
+                // console.log("Media server connected: " + ms_url)
+                if(mediaServer.kurento_client) {
+                    mediaServer.status = "READY";
+                    // console.log("Media server status: " + mediaServer.status)
+                }  
+            } catch (error) {
+                mediaServer.status = "ERROR";
+            }        
+        }
 
         this._mediaServers[ms_url] = mediaServer;
         return true;

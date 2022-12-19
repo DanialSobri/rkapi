@@ -3,10 +3,8 @@ const { Router } = require('express');
 const { pathParser } = require('../lib/path');
 const { yellow } = require('../lib/colors');
 const { onEcho, sendEcho } = require('./services/echo');
-const { recvHeartbeat } = require('./services/signaling');
-const { onRoomEvent,sendRoomEvent } = require('./services/roomEvent');
-const path = require('path');
-const { receiveMessageOnPort } = require('worker_threads');
+const signaling = require('./services/signaling');
+const roomEvent = require('./services/roomEvent');
 
 const router = Router();
 module.exports = router;
@@ -139,8 +137,12 @@ router.ws('/signaling', async (ws, req) => {
   const guest_code = req.query.token;
 
   // Client connected 
-  console.log(`${yellow(path)} client ${guest_code} is connected.`);
-  await sendRoomEvent(ws, { room_event: 'UserConnected', room_id: guest_code });
+  ws.on('connection', async (ws)=> {
+    console.log('Client connected');
+    console.log(`${yellow(path)} client ${guest_code} is connected.`);
+    await roomEvent.sendRoomEvent(ws, { room_event: 'UserConnected', room_id: guest_code });
+    // new User()
+  });
 
   ws.on('message', async (msg) => {
     const message = JSON.parse(msg.toString())
@@ -173,7 +175,7 @@ router.ws('/signaling', async (ws, req) => {
         console.log('Not ready received')
         break;
       case 'message':
-        receiveMessage(message.args)
+        await signaling.onDirectMessage(ws,message.args)
         break;
       case 'report_data_usage':
         console.log('Report data usage received')
@@ -185,32 +187,3 @@ router.ws('/signaling', async (ws, req) => {
   });
 });
 
-// Manage the message
-function receiveMessage(args) 
-{
-  const room = args.room;
-  const msg = args.msg.split('|');
-  const msg_type = msg[0];
-  // const msg_data = args.msg.split('|')
-  // Split the message into msg_type, msg_data
-  // onSDP
-  if(msg_type == 'sdp') {
-    // Send sdp to Kurento Client
-    to_send = {
-      type: msg[1],
-      sdp: msg[2]
-    }
-    console.log( to_send );
-  }
-
-  if(msg_type == 'ice') {
-    // Send ice to Kurento Client
-    to_send = {
-      candidate: msg[1].replace("candidate",""),
-      sdpMLineIndex: msg[2],
-      sdpMid: msg[3]
-    }
-    console.log( to_send );
-  }
-
-}
