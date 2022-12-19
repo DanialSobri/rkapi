@@ -8,8 +8,8 @@ Hey There! 🙌 rkapi is an Async API server and modular backend build specifica
 Todo list for the development of this project.
 
 - [✓] Basic API server with websocket
-- [ ] Implement room management
-- [ ] Integrate Kurento Client in the API server
+- [✓] Implement room management
+- [✓] Integrate Kurento Client in the API server
 - [ ] Implement signaling protocol
 - [ ] Implement MCU multi-peers strategy
 - [ ] Integrate with RemAid Web based app
